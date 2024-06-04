@@ -86,7 +86,8 @@ def scraping(head, term = ""):
         try:
             pagina.wait_for_selector(contenidoPrincipal, timeout=10*1000)
         except PlaywrightTimeoutError:
-            print(f"Error al cargar contenido. Vuelva a intentarlo en unos minutos.")        
+            print(f"Error al cargar contenido. Vuelva a intentarlo en unos minutos.")
+            return []
         
         try:
             ultimaPagina = pagina.query_selector(
