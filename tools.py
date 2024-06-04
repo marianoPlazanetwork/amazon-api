@@ -124,6 +124,8 @@ def scraping(head, term = ""):
             except AttributeError:
                 print(f"Hay problemas con la sección {pagina.url} | Número: {click}")
                 break
+            except:
+                break
 
         navegador.close()
 
