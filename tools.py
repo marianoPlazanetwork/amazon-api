@@ -28,21 +28,22 @@ class TryExcept:
         try:
             return element.inner_text().strip()
         except AttributeError:
-            return "Sin Información"
+            return "NO_AVAILABLE"
 
     def attributes(self, element, attr):
         try:
             return element.get_attribute(attr)
         except AttributeError:
-            return " Valor No disponible"
+            return "NO_AVAILABLE"
 
 #función principal del código, se ingresa el enlace, dirigue hacia el producto y realiza la búsqueda y extracción de información
-def scraping(head):
+def scraping(head, term = ""):
     datosAmazon = []
     catchClause = TryExcept()
     
     #variables donde almacena que se quiere buscar y el enlace de amazon
-    produbuscar = str(input("Ingresa el nombre del producto que quieres buscar: "))
+    # produbuscar = str(input("Ingresa el nombre del producto que quieres buscar: "))
+    produbuscar = term
     produinser = produbuscar.replace(" ","+")
     ingresoProducto = f"https://www.amazon.com/s?k={produinser}&language=en_US"   
     
@@ -53,7 +54,7 @@ def scraping(head):
         sys.exit()
     
     with sync_playwright() as play:
-        navegador = play.chromium.launch(headless=head, slow_mo=3*1000)
+        navegador = play.chromium.launch(headless=head, slow_mo=10*1000)
         pagina = navegador.new_page(user_agent=agenteUsuario())
         pagina.goto(ingresoProducto)
 
@@ -61,11 +62,11 @@ def scraping(head):
 
         ##################### Selectores XPATH ###########################################################################################################
         # La siguiente variable es para el producto buscado, podría haber más de dos elementos para él.
-        try:
-            print(pagina)
-            nombreProducto = pagina.locator("//div[@id='departments']/ul[@class='a-unordered-list a-nostyle a-vertical a-spacing-medium']/li[@class='a-spacing-micro s-navigation-indent-1']/span[@class='a-list-item']/span[@class='a-size-base a-color-base a-text-bold']").inner_text().strip()
-        except AttributeError:
-            nombreProducto = pagina.locator("//div[@id='departments']/ul[@class='a-unordered-list a-nostyle a-vertical a-spacing-medium']/li[@class='a-spacing-micro']/span[@class='a-list-item']").inner_text().strip()
+        # try:
+        #     print(pagina)
+        #     nombreProducto = pagina.locator("//div[@id='departments']/ul[@class='a-unordered-list a-nostyle a-vertical a-spacing-medium']/li[@class='a-spacing-micro s-navigation-indent-1']/span[@class='a-list-item']/span[@class='a-size-base a-color-base']").inner_text().strip()
+        # except AttributeError:
+        #     nombreProducto = pagina.locator("//div[@id='departments']/ul[@class='a-unordered-list a-nostyle a-vertical a-spacing-medium']/li[@class='a-spacing-micro']/span[@class='a-list-item']").inner_text().strip()
         
         totalPaginasUno = "//span[@class='s-pagination-item s-pagination-disabled']"
         totalPaginasDos = "//span[@class='s-pagination-strip']/a"
@@ -80,7 +81,7 @@ def scraping(head):
         numCalifica = "//a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style']/span[@class='a-size-base s-underline-text']"
         imagen = "//img[@class='s-image']"
         ###################################################################################################################################################
-        print(nombreProducto)
+        # print(nombreProducto)
         
         try:
             pagina.wait_for_selector(contenidoPrincipal, timeout=10*1000)
@@ -95,6 +96,9 @@ def scraping(head):
 
         print(f"El número de Páginas es: {ultimaPagina}.")
         print(f"Realizando Scraping a: {produbuscar}.")
+        
+        # changeUltimapagina
+        # ultimaPagina = "2"
 
         for click in range(1, int(ultimaPagina)):
             print(f"Página de Scraping N° {click}")
@@ -123,13 +127,15 @@ def scraping(head):
         navegador.close()
 
     print(f"Scraping realizado con Exito. Se guardará un archivo CSV")
+    # print(datosAmazon)
+    # if (len(datosAmazon) > 0):
+    #     print(datosAmazon[0])
     
-
-    
+    return datosAmazon
     #Guardamos el resultado en un archivo Excel y lo imprimimos   
-    df = pd.DataFrame(datosAmazon)
-    df.to_excel(f"{produbuscar}.xlsx", index=False)
-    print(f"{produbuscar} Se ha guardado con éxito")
-    dfrecien = pd.read_excel(f"{produbuscar}.xlsx")
-    print(dfrecien)
+    # df = pd.DataFrame(datosAmazon)
+    # df.to_excel(f"{produbuscar}.xlsx", index=False)
+    # print(f"{produbuscar} Se ha guardado con éxito")
+    # dfrecien = pd.read_excel(f"{produbuscar}.xlsx")
+    # print(dfrecien)
 
