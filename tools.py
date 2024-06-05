@@ -79,7 +79,7 @@ def scraping(head, term = ""):
         precioAnterior = "//span[@data-a-color='secondary']/span[@class='a-offscreen']"
         califica = "//span[@class='a-declarative']/a/i/span[@class='a-icon-alt']"
         numCalifica = "//a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style']/span[@class='a-size-base s-underline-text']"
-        imagen = "//img[@class='s-image']"
+        imagen = "//img[@class='s-image s-image-optimized-rendering']"
         ###################################################################################################################################################
         # print(nombreProducto)
         
