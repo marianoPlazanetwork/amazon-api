@@ -106,15 +106,15 @@ def scraping(head, term = ""):
             pagina.wait_for_timeout(timeout=tiempoAlea(8)*1000)
             for content in pagina.query_selector_all(contenidoPrincipal):
                 datos = {
-                    "Producto": catchClause.text(content.query_selector(enlace)),
+                    "product": catchClause.text(content.query_selector(enlace)),
                     # Número de Identificación Estándar de Amazon(ASIN)
                     "ASIN": catchClause.attributes(content, 'data-asin'),
-                    "Precio": catchClause.text(content.query_selector(precio)),
-                    "Precio Original": catchClause.text(content.query_selector(precioAnterior)),
-                    "Calificación": catchClause.text(content.query_selector(califica)),
-                    "Num de Calificaciones": re.sub(r"[()]", "", catchClause.text(content.query_selector(numCalifica))),
-                    "Enlace Producto": f"""http://www.amazon.com{catchClause.attributes(content.query_selector(enlace), 'href')}""",
-                    "Imagen": f"""{catchClause.attributes(content.query_selector(imagen), 'src')}""",
+                    "price": catchClause.text(content.query_selector(precio)),
+                    "original_price": catchClause.text(content.query_selector(precioAnterior)),
+                    "scrore": catchClause.text(content.query_selector(califica)),
+                    "score_nums": re.sub(r"[()]", "", catchClause.text(content.query_selector(numCalifica))),
+                    "product_link": f"""http://www.amazon.com{catchClause.attributes(content.query_selector(enlace), 'href')}""",
+                    "image": f"""{catchClause.attributes(content.query_selector(imagen), 'src')}""",
                 }
                 #Agregando información recolectada
                 datosAmazon.append(datos)
