@@ -36,6 +36,58 @@ class TryExcept:
         except AttributeError:
             return "NO_AVAILABLE"
 
+def scrappingProduct(link):
+    catchClause = TryExcept()
+    with sync_playwright() as play:
+        navegador = play.chromium.launch(headless=True, slow_mo=10*1000)
+        pagina = navegador.new_page(user_agent=agenteUsuario())
+        pagina.goto(link)
+        pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
+        tablaCaracteristicas = "//table[@class='a-normal a-spacing-micro']/tbody/tr"
+        attributeLabel = "//td[@class='a-span3']/span"
+        attributeValue = "//td[@class='a-span9']/span"
+        listaCaracteristicas = "//ul[@class='a-unordered-list a-vertical a-spacing-mini']/li[@class='a-spacing-mini']"
+        liTextCaracteristica = "//span[@class='a-list-item']"
+        listImages = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro regularAltImageViewLayout']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
+        imagen = "//span[@class='a-button-text']/img"
+        
+        images = []
+        for content in pagina.query_selector_all(listImages):
+            img = f"""{catchClause.attributes(content.query_selector(imagen), 'src')}"""
+            print(img)
+            imgA = img.split('.')
+            del imgA[-2]
+            img = ""
+            for x in range(0, len(imgA)):
+                if (x == 0):
+                    img += imgA[x]
+                else:
+                    img += '.'+imgA[x]
+            images.append(img)
+        
+        values = []
+        for content in pagina.query_selector_all(tablaCaracteristicas):
+            label = catchClause.text(content.query_selector(attributeLabel))
+            textCharacteristic = catchClause.text(content.query_selector(attributeValue))
+            value = {
+                "label": label,
+                "text": textCharacteristic
+            }
+            values.append(value)
+        
+        attributesProduct = []
+        for content in pagina.query_selector_all(listaCaracteristicas):
+            text = catchClause.text(content.query_selector(liTextCaracteristica))
+            attributesProduct.append(text)
+            #Agregando información recolectada
+        navegador.close()
+        dataProduct = {
+            "attributes": attributesProduct,
+            "values": values,
+            "images": images
+        }
+    return dataProduct
+
 #función principal del código, se ingresa el enlace, dirigue hacia el producto y realiza la búsqueda y extracción de información
 def scraping(head, term = ""):
     datosAmazon = []
@@ -99,12 +151,13 @@ def scraping(head, term = ""):
         print(f"Realizando Scraping a: {produbuscar}.")
         
         # changeUltimapagina
-        # ultimaPagina = "2"
+        ultimaPagina = "2"
 
         for click in range(1, int(ultimaPagina)):
             print(f"Página de Scraping N° {click}")
             pagina.wait_for_timeout(timeout=tiempoAlea(8)*1000)
             for content in pagina.query_selector_all(contenidoPrincipal):
+                linkProduct = f"""http://www.amazon.com{catchClause.attributes(content.query_selector(enlace), 'href')}"""
                 datos = {
                     "product": catchClause.text(content.query_selector(enlace)),
                     # Número de Identificación Estándar de Amazon(ASIN)
@@ -113,7 +166,7 @@ def scraping(head, term = ""):
                     "original_price": catchClause.text(content.query_selector(precioAnterior)),
                     "scrore": catchClause.text(content.query_selector(califica)),
                     "score_nums": re.sub(r"[()]", "", catchClause.text(content.query_selector(numCalifica))),
-                    "product_link": f"""http://www.amazon.com{catchClause.attributes(content.query_selector(enlace), 'href')}""",
+                    "product_link": linkProduct,
                     "image": f"""{catchClause.attributes(content.query_selector(imagen), 'src')}""",
                 }
                 #Agregando información recolectada
