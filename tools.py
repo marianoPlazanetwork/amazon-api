@@ -37,6 +37,7 @@ class TryExcept:
             return "NO_AVAILABLE"
 
 def scrappingProduct(link):
+    print('Inicio scraping product')
     catchClause = TryExcept()
     with sync_playwright() as play:
         navegador = play.chromium.launch(headless=True, slow_mo=10*1000)
