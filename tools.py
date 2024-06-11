@@ -152,33 +152,41 @@ def scraping(head, term = ""):
         
         # changeUltimapagina
         # ultimaPagina = "2"
+        
+        lastPage = int(ultimaPagina)
 
-        for click in range(1, int(ultimaPagina)):
+        for click in range(1, lastPage):
             print(f"Página de Scraping N° {click}")
-            pagina.wait_for_timeout(timeout=tiempoAlea(8)*1000)
-            for content in pagina.query_selector_all(contenidoPrincipal):
-                linkProduct = f"""http://www.amazon.com{catchClause.attributes(content.query_selector(enlace), 'href')}"""
-                datos = {
-                    "product": catchClause.text(content.query_selector(enlace)),
-                    # Número de Identificación Estándar de Amazon(ASIN)
-                    "ASIN": catchClause.attributes(content, 'data-asin'),
-                    "price": catchClause.text(content.query_selector(precio)),
-                    "original_price": catchClause.text(content.query_selector(precioAnterior)),
-                    "scrore": catchClause.text(content.query_selector(califica)),
-                    "score_nums": re.sub(r"[()]", "", catchClause.text(content.query_selector(numCalifica))),
-                    "product_link": linkProduct,
-                    "image": f"""{catchClause.attributes(content.query_selector(imagen), 'src')}""",
-                }
-                #Agregando información recolectada
-                datosAmazon.append(datos)
-
+            if (click == (lastPage - 1)):
+                break
+            try:
+                pagina.wait_for_timeout(timeout=tiempoAlea(8)*1000)
+                for content in pagina.query_selector_all(contenidoPrincipal):
+                    linkProduct = f"""http://www.amazon.com{catchClause.attributes(content.query_selector(enlace), 'href')}"""
+                    datos = {
+                        "product": catchClause.text(content.query_selector(enlace)),
+                        # Número de Identificación Estándar de Amazon(ASIN)
+                        "ASIN": catchClause.attributes(content, 'data-asin'),
+                        "price": catchClause.text(content.query_selector(precio)),
+                        "original_price": catchClause.text(content.query_selector(precioAnterior)),
+                        "scrore": catchClause.text(content.query_selector(califica)),
+                        "score_nums": re.sub(r"[()]", "", catchClause.text(content.query_selector(numCalifica))),
+                        "product_link": linkProduct,
+                        "image": f"""{catchClause.attributes(content.query_selector(imagen), 'src')}""",
+                    }
+                    #Agregando información recolectada
+                    datosAmazon.append(datos)
+            except:
+                print('Expeción en consulta a siguiente página')
+                break
             try:
                 pagina.query_selector(siguienteBoton).click()
             except AttributeError:
-                print(f"Hay problemas con la sección {pagina.url} | Número: {click}")
+                print(f"Hay problemas con la siguiente sección número: {click}")
                 break
             except:
                 break
+
         for indexProduct in range(0, len(datosAmazon)):
             pagina.goto(datosAmazon[indexProduct]['product_link'])
             pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
