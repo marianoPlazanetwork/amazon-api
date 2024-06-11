@@ -15,7 +15,7 @@ def scraperItemsAmazon(term: str):
   try:
     datosAmazon = scraping(True, term)
   except:
-    return { "code": 404, "message": "Products could not be obtained", "items": [] } 
+    return { "code": 404, "message": "Error: products could not be obtained", "items": [] } 
   if(len(datosAmazon) == 0): 
     return { "code": 404, "message": "Products could not be obtained", "items": [] }
   return { "code": 200, "message": "Success", "items": datosAmazon }
