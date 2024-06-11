@@ -9,7 +9,7 @@ def hello():
 
 @app.get("/v1/get-info-amazon")
 def scraperItemsAmazon(term: str):
-  if (term.__len__() == 0):
+  if (len(term) == 0):
     return { "code": 500, "message": "You should send a search term", "items": [] }
   datosAmazon = []
   try:
@@ -22,7 +22,7 @@ def scraperItemsAmazon(term: str):
 
 @app.get('/v1/get-info-item')
 def scrapperItemAmazon(link: str):
-  if (link.__len__() == 0):
+  if (len(link) == 0):
     return { "code": 500, "message": "You should send a search link", "items": [] }
   dataProduct = scrapperItemAmazon(link)
   return { "code": 200, "message": "Success", "items": dataProduct }
