@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from tools import scraping
+from tools import scraping, scrappingProduct
 
 app = FastAPI()
 
@@ -24,5 +24,8 @@ def scraperItemsAmazon(term: str):
 def scrapperItemAmazon(link: str):
   if (len(link) == 0):
     return { "code": 500, "message": "You should send a search link", "items": [] }
-  dataProduct = scrapperItemAmazon(link)
+  try:
+    dataProduct = scrappingProduct(link)
+  except:
+    return { "code": 404, "message": "Error: products could not be obtained", "items": [] } 
   return { "code": 200, "message": "Success", "items": dataProduct }
