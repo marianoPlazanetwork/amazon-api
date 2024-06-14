@@ -163,11 +163,15 @@ def scraping(head, term = ""):
         sys.exit()
     
     with sync_playwright() as play:
-        navegador = play.chromium.launch(headless=head, slow_mo=10*1000)
-        pagina = navegador.new_page(user_agent=agenteUsuario())
-        pagina.goto(ingresoProducto)
+        try:
+            navegador = play.chromium.launch(headless=head, slow_mo=10*1000)
+            pagina = navegador.new_page(user_agent=agenteUsuario())
+            pagina.goto(ingresoProducto)
 
-        pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
+            pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
+        except:
+            print("Error al lanzar navegador")
+            return datosAmazon
 
         ##################### Selectores XPATH ###########################################################################################################
         # La siguiente variable es para el producto buscado, podría haber más de dos elementos para él.
@@ -246,7 +250,7 @@ def scraping(head, term = ""):
 
         navegador.close()
 
-    print(f"Scraping realizado con Exito. Se guardará un archivo CSV")
+    print(f"Scraping realizado con Exito.")
     # print(datosAmazon)
     # if (len(datosAmazon) > 0):
     #     print(datosAmazon[0])
