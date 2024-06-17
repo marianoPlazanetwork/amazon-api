@@ -38,6 +38,7 @@ class URLProduct(BaseModel):
 def getDataProduct(data: URLProduct):
   try:
     dataProducts = scrappingProducts(data.links)
-  except:
+  except  Exception as e:
+    print(e)
     return { "code": 404, "message": "Error: products could not be obtained", "items": [] } 
   return { "code": 200, "message": "Success", "items": dataProducts }
