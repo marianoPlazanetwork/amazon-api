@@ -97,50 +97,58 @@ def scrappingProducts(links):
         pagina = navegador.new_page(user_agent=agenteUsuario())
         dataProducts = []
         for link in links:
-            pagina.goto(link)
-            pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
-            tablaCaracteristicas = "//table[@class='a-normal a-spacing-micro']/tbody/tr"
-            attributeLabel = "//td[@class='a-span3']/span"
-            attributeValue = "//td[@class='a-span9']/span"
-            listaCaracteristicas = "//ul[@class='a-unordered-list a-vertical a-spacing-mini']/li[@class='a-spacing-mini']"
-            liTextCaracteristica = "//span[@class='a-list-item']"
-            listImages = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro regularAltImageViewLayout']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
-            imagen = "//span[@class='a-button-text']/img"
-            
-            images = []
-            for content in pagina.query_selector_all(listImages):
-                img = f"""{catchClause.attributes(content.query_selector(imagen), 'src')}"""
-                imgA = img.split('.')
-                del imgA[-2]
-                img = ""
-                for x in range(0, len(imgA)):
-                    if (x == 0):
-                        img += imgA[x]
-                    else:
-                        img += '.'+imgA[x]
-                images.append(img)
-            
-            values = []
-            for content in pagina.query_selector_all(tablaCaracteristicas):
-                label = catchClause.text(content.query_selector(attributeLabel))
-                textCharacteristic = catchClause.text(content.query_selector(attributeValue))
-                value = {
-                    "label": label,
-                    "text": textCharacteristic
+            try:
+                pagina.goto(link)
+                pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
+                tablaCaracteristicas = "//table[@class='a-normal a-spacing-micro']/tbody/tr"
+                attributeLabel = "//td[@class='a-span3']/span"
+                attributeValue = "//td[@class='a-span9']/span"
+                listaCaracteristicas = "//ul[@class='a-unordered-list a-vertical a-spacing-mini']/li[@class='a-spacing-mini']"
+                liTextCaracteristica = "//span[@class='a-list-item']"
+                listImages = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro regularAltImageViewLayout']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
+                imagen = "//span[@class='a-button-text']/img"
+                
+                images = []
+                for content in pagina.query_selector_all(listImages):
+                    img = f"""{catchClause.attributes(content.query_selector(imagen), 'src')}"""
+                    imgA = img.split('.')
+                    del imgA[-2]
+                    img = ""
+                    for x in range(0, len(imgA)):
+                        if (x == 0):
+                            img += imgA[x]
+                        else:
+                            img += '.'+imgA[x]
+                    images.append(img)
+                
+                values = []
+                for content in pagina.query_selector_all(tablaCaracteristicas):
+                    label = catchClause.text(content.query_selector(attributeLabel))
+                    textCharacteristic = catchClause.text(content.query_selector(attributeValue))
+                    value = {
+                        "label": label,
+                        "text": textCharacteristic
+                    }
+                    values.append(value)
+                
+                attributesProduct = []
+                for content in pagina.query_selector_all(listaCaracteristicas):
+                    text = catchClause.text(content.query_selector(liTextCaracteristica))
+                    attributesProduct.append(text)
+                    #Agregando información recolectada
+                dataProduct = {
+                    "attributes": attributesProduct,
+                    "values": values,
+                    "images": images
                 }
-                values.append(value)
-            
-            attributesProduct = []
-            for content in pagina.query_selector_all(listaCaracteristicas):
-                text = catchClause.text(content.query_selector(liTextCaracteristica))
-                attributesProduct.append(text)
-                #Agregando información recolectada
-            dataProduct = {
-                "attributes": attributesProduct,
-                "values": values,
-                "images": images
-            }
-            dataProducts.append(dataProduct)
+                dataProducts.append(dataProduct)
+            except:
+                dataProduct = {
+                    "attributes": [],
+                    "values": [],
+                    "images": []
+                }
+                dataProducts.append(dataProduct)
         navegador.close()
     print('End scraping product from links')
     return dataProducts
