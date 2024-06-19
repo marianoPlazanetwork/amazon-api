@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from tools import scraping, scrappingProduct, scrappingProducts
+from tools import scraping, scrappingProduct, scrappingProducts, scrappingProductSKU
 
 app = FastAPI()
 
@@ -15,6 +15,19 @@ def scraperItemsAmazon(term: str):
   datosAmazon = []
   try:
     datosAmazon = scraping(True, term)
+  except:
+    return { "code": 404, "message": "Error: products could not be obtained", "items": [] } 
+  if(len(datosAmazon) == 0): 
+    return { "code": 404, "message": "Products could not be obtained", "items": [] }
+  return { "code": 200, "message": "Success", "items": datosAmazon }
+
+@app.get('/v1/get-info-amazon-sku')
+def scrapperItemAmazonSKU(sku: str):
+  if (len(sku) == 0):
+    return { "code": 500, "message": "You should send a search term", "items": [] }
+  datosAmazon = []
+  try:
+    datosAmazon = scrappingProductSKU(sku)
   except:
     return { "code": 404, "message": "Error: products could not be obtained", "items": [] } 
   if(len(datosAmazon) == 0): 

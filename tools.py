@@ -96,7 +96,13 @@ def scrappingProducts(links):
         navegador = play.chromium.launch(headless=True, slow_mo=10*1000)
         pagina = navegador.new_page(user_agent=agenteUsuario())
         dataProducts = []
+        images = []
+        values = []
+        attributesProduct = []
         for link in links:
+            images = []
+            values = []
+            attributesProduct = []
             try:
                 pagina.goto(link)
                 pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
@@ -107,8 +113,8 @@ def scrappingProducts(links):
                 liTextCaracteristica = "//span[@class='a-list-item']"
                 listImages = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro regularAltImageViewLayout']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
                 imagen = "//span[@class='a-button-text']/img"
+                listHorizontal = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro gridAltImageViewLayoutIn1x7']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
                 
-                images = []
                 for content in pagina.query_selector_all(listImages):
                     img = f"""{catchClause.attributes(content.query_selector(imagen), 'src')}"""
                     imgA = img.split('.')
@@ -121,7 +127,6 @@ def scrappingProducts(links):
                             img += '.'+imgA[x]
                     images.append(img)
                 
-                values = []
                 for content in pagina.query_selector_all(tablaCaracteristicas):
                     label = catchClause.text(content.query_selector(attributeLabel))
                     textCharacteristic = catchClause.text(content.query_selector(attributeValue))
@@ -131,27 +136,105 @@ def scrappingProducts(links):
                     }
                     values.append(value)
                 
-                attributesProduct = []
                 for content in pagina.query_selector_all(listaCaracteristicas):
                     text = catchClause.text(content.query_selector(liTextCaracteristica))
                     attributesProduct.append(text)
+
+                for content in pagina.query_selector_all(listHorizontal):
+                    img = f"""{catchClause.attributes(content.query_selector(imagen), 'src')}"""
+                    imgA = img.split('.')
+                    del imgA[-2]
+                    img = ""
+                    for x in range(0, len(imgA)):
+                        if (x == 0):
+                            img += imgA[x]
+                        else:
+                            img += '.'+imgA[x]
+                    images.append(img)
                     #Agregando información recolectada
                 dataProduct = {
                     "attributes": attributesProduct,
                     "values": values,
-                    "images": images
+                    "images": images,
                 }
                 dataProducts.append(dataProduct)
             except:
                 dataProduct = {
-                    "attributes": [],
-                    "values": [],
-                    "images": []
+                    "attributes": attributesProduct,
+                    "values": values,
+                    "images": images,
                 }
                 dataProducts.append(dataProduct)
         navegador.close()
     print('End scraping product from links')
     return dataProducts
+
+def scrappingProductSKU(sku):
+    datosAmazon = []
+    catchClause = TryExcept()
+    ingresoProducto = f"https://www.amazon.com/dp/{sku}"
+    print('Start scraping product from sku')
+    with sync_playwright() as play:
+        navegador = play.chromium.launch(headless=True, slow_mo=10*1000)
+        pagina = navegador.new_page(user_agent=agenteUsuario())
+        try:
+            pagina.goto(ingresoProducto)
+            pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
+            productName = "//h1[@class='a-size-large a-spacing-none']/span"
+            price = "//span[@class='a-price a-text-price a-size-medium apexPriceToPay']/span[@class='a-offscreen']"
+            score = "//span[@class='a-size-medium a-color-base a-text-beside-button a-text-bold']"
+            scoreNumber = "//span[@id='acrCustomerReviewText']"
+            
+            listImages = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro regularAltImageViewLayout']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
+            imagen = "//span[@class='a-button-text']/img"
+            listHorizontal = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro gridAltImageViewLayoutIn1x7']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
+            
+            img = ''
+            # for content in pagina.query_selector_all(listImages):
+            #     img = catchClause.text(content.query_selector(content))
+            if (len(pagina.query_selector_all(listImages)) != 0):
+                imgTag = pagina.query_selector_all(listImages)[0]
+                img = f"""{catchClause.attributes(imgTag.query_selector(imagen), 'src')}"""
+                imgA = img.split('.')
+                del imgA[-2]
+                img = ""
+                for x in range(0, len(imgA)):
+                    if (x == 0):
+                        img += imgA[x]
+                    else:
+                        img += '.'+imgA[x]
+            elif (len(pagina.query_selector_all(listHorizontal)) != 0):
+                imgTag = pagina.query_selector_all(listHorizontal)[0]
+                img = f"""{catchClause.attributes(imgTag.query_selector(imagen), 'src')}"""
+                imgA = img.split('.')
+                del imgA[-2]
+                img = ""
+                for x in range(0, len(imgA)):
+                    if (x == 0):
+                        img += imgA[x]
+                    else:
+                        img += '.'+imgA[x]
+            else:
+                img = 'NO_AVAILABLE'
+                
+            datos = {
+                "product": catchClause.text(pagina.query_selector(productName)),
+                # Número de Identificación Estándar de Amazon(ASIN)
+                "ASIN": sku,
+                "price": catchClause.text(pagina.query_selector(price)),
+                "original_price": catchClause.text(pagina.query_selector(price)),
+                "scrore": catchClause.text(pagina.query_selector(score)),
+                "score_nums": re.sub(r"[()]", "", catchClause.text(pagina.query_selector(scoreNumber))),
+                "product_link": ingresoProducto,
+                "image": img,
+            }
+            
+            datosAmazon.append(datos)
+        except:
+            datosAmazon = []
+        navegador.close()
+    print('End scraping product from sku')
+    return datosAmazon
 
 #función principal del código, se ingresa el enlace, dirigue hacia el producto y realiza la búsqueda y extracción de información
 def scraping(head, term = ""):
