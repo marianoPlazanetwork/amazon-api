@@ -182,6 +182,7 @@ def scrappingProductSKU(sku):
             pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
             productName = "//h1[@class='a-size-large a-spacing-none']/span"
             price = "//span[@class='a-price a-text-price a-size-medium apexPriceToPay']/span[@class='a-offscreen']"
+            secondPrice = "//div[@class='a-section a-spacing-none aok-align-center aok-relative']/span[@class='aok-offscreen']"
             score = "//span[@class='a-size-medium a-color-base a-text-beside-button a-text-bold']"
             scoreNumber = "//span[@id='acrCustomerReviewText']"
             
@@ -217,12 +218,17 @@ def scrappingProductSKU(sku):
             else:
                 img = 'NO_AVAILABLE'
                 
+            priceText = catchClause.text(pagina.query_selector(price))
+            if (priceText == 'NO_AVAILABLE'):
+                priceText = catchClause.text(pagina.query_selector(secondPrice))
+                print(priceText)
+                
             datos = {
                 "product": catchClause.text(pagina.query_selector(productName)),
                 # Número de Identificación Estándar de Amazon(ASIN)
                 "ASIN": sku,
-                "price": catchClause.text(pagina.query_selector(price)),
-                "original_price": catchClause.text(pagina.query_selector(price)),
+                "price": priceText,
+                "original_price": priceText,
                 "scrore": catchClause.text(pagina.query_selector(score)),
                 "score_nums": re.sub(r"[()]", "", catchClause.text(pagina.query_selector(scoreNumber))),
                 "product_link": ingresoProducto,
