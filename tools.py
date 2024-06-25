@@ -179,7 +179,7 @@ def scrappingProductSKU(sku):
         pagina = navegador.new_page(user_agent=agenteUsuario())
         try:
             pagina.goto(ingresoProducto)
-            pagina.wait_for_timeout(timeout=tiempoAlea(4)*1000)
+            pagina.wait_for_timeout(timeout=tiempoAlea(8)*1000)
             productName = "//h1[@class='a-size-large a-spacing-none']/span"
             price = "//span[@class='a-price a-text-price a-size-medium apexPriceToPay']/span[@class='a-offscreen']"
             secondPrice = "//div[@class='a-section a-spacing-none aok-align-center aok-relative']/span[@class='aok-offscreen']"
