@@ -221,6 +221,11 @@ def scrappingProductSKU(sku):
             priceText = catchClause.text(pagina.query_selector(price))
             if (priceText == 'NO_AVAILABLE'):
                 priceText = catchClause.text(pagina.query_selector(secondPrice))
+                if (priceText != 'NO_AVAILABLE'):
+                    priceText = priceText.split(' ')[0]
+                print(priceText)
+            else:
+                priceText = priceText.split(' ')[0]
                 print(priceText)
                 
             datos = {
