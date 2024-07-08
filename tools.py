@@ -169,80 +169,88 @@ def scrappingProducts(links):
     print('End scraping product from links')
     return dataProducts
 
-def scrappingProductSKU(sku):
+def scrappingProductSKU(sku: str):
     datosAmazon = []
     catchClause = TryExcept()
-    ingresoProducto = f"https://www.amazon.com/dp/{sku}"
     print('Start scraping product from sku')
     with sync_playwright() as play:
         navegador = play.chromium.launch(headless=True, slow_mo=10*1000)
         pagina = navegador.new_page(user_agent=agenteUsuario())
-        try:
-            pagina.goto(ingresoProducto)
-            pagina.wait_for_timeout(timeout=tiempoAlea(8)*1000)
-            productName = "//h1[@class='a-size-large a-spacing-none']/span"
-            price = "//span[@class='a-price a-text-price a-size-medium apexPriceToPay']/span[@class='a-offscreen']"
-            secondPrice = "//div[@class='a-section a-spacing-none aok-align-center aok-relative']/span[@class='aok-offscreen']"
-            score = "//span[@class='a-size-medium a-color-base a-text-beside-button a-text-bold']"
-            scoreNumber = "//span[@id='acrCustomerReviewText']"
-            
-            listImages = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro regularAltImageViewLayout']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
-            imagen = "//span[@class='a-button-text']/img"
-            listHorizontal = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro gridAltImageViewLayoutIn1x7']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
-            
-            img = ''
-            # for content in pagina.query_selector_all(listImages):
-            #     img = catchClause.text(content.query_selector(content))
-            if (len(pagina.query_selector_all(listImages)) != 0):
-                imgTag = pagina.query_selector_all(listImages)[0]
-                img = f"""{catchClause.attributes(imgTag.query_selector(imagen), 'src')}"""
-                imgA = img.split('.')
-                del imgA[-2]
-                img = ""
-                for x in range(0, len(imgA)):
-                    if (x == 0):
-                        img += imgA[x]
-                    else:
-                        img += '.'+imgA[x]
-            elif (len(pagina.query_selector_all(listHorizontal)) != 0):
-                imgTag = pagina.query_selector_all(listHorizontal)[0]
-                img = f"""{catchClause.attributes(imgTag.query_selector(imagen), 'src')}"""
-                imgA = img.split('.')
-                del imgA[-2]
-                img = ""
-                for x in range(0, len(imgA)):
-                    if (x == 0):
-                        img += imgA[x]
-                    else:
-                        img += '.'+imgA[x]
-            else:
-                img = 'NO_AVAILABLE'
+        
+        skus = sku.split(',')
+        for individual_sku in skus:
+            try:
+                ingresoProducto = f"https://www.amazon.com/dp/{individual_sku.strip()}"
+                pagina.goto(ingresoProducto)
+                pagina.wait_for_timeout(timeout=tiempoAlea(8)*1000)
+                productName = "//h1[@class='a-size-large a-spacing-none']/span"
+                productNameSecondary = "//h1[@class='a-size-large a-spacing-none a-color-secondary']/span"
+                price = "//span[@class='a-price a-text-price a-size-medium apexPriceToPay']/span[@class='a-offscreen']"
+                secondPrice = "//div[@class='a-section a-spacing-none aok-align-center aok-relative']/span[@class='aok-offscreen']"
+                score = "//span[@class='a-size-medium a-color-base a-text-beside-button a-text-bold']"
+                scoreNumber = "//span[@id='acrCustomerReviewText']"
                 
-            priceText = catchClause.text(pagina.query_selector(price))
-            if (priceText == 'NO_AVAILABLE'):
-                priceText = catchClause.text(pagina.query_selector(secondPrice))
-                if (priceText != 'NO_AVAILABLE'):
+                listImages = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro regularAltImageViewLayout']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
+                imagen = "//span[@class='a-button-text']/img"
+                listHorizontal = "//ul[@class='a-unordered-list a-nostyle a-button-list a-vertical a-spacing-top-micro gridAltImageViewLayoutIn1x7']/li[@class='a-spacing-small item imageThumbnail a-declarative']"
+                
+                img = ''
+                # for content in pagina.query_selector_all(listImages):
+                #     img = catchClause.text(content.query_selector(content))
+                if (len(pagina.query_selector_all(listImages)) != 0):
+                    imgTag = pagina.query_selector_all(listImages)[0]
+                    img = f"""{catchClause.attributes(imgTag.query_selector(imagen), 'src')}"""
+                    imgA = img.split('.')
+                    del imgA[-2]
+                    img = ""
+                    for x in range(0, len(imgA)):
+                        if (x == 0):
+                            img += imgA[x]
+                        else:
+                            img += '.'+imgA[x]
+                elif (len(pagina.query_selector_all(listHorizontal)) != 0):
+                    imgTag = pagina.query_selector_all(listHorizontal)[0]
+                    img = f"""{catchClause.attributes(imgTag.query_selector(imagen), 'src')}"""
+                    imgA = img.split('.')
+                    del imgA[-2]
+                    img = ""
+                    for x in range(0, len(imgA)):
+                        if (x == 0):
+                            img += imgA[x]
+                        else:
+                            img += '.'+imgA[x]
+                else:
+                    img = 'NO_AVAILABLE'
+                    
+                priceText = catchClause.text(pagina.query_selector(price))
+                if (priceText == 'NO_AVAILABLE'):
+                    priceText = catchClause.text(pagina.query_selector(secondPrice))
+                    if (priceText != 'NO_AVAILABLE'):
+                        priceText = priceText.split(' ')[0]
+                    print(priceText)
+                else:
                     priceText = priceText.split(' ')[0]
-                print(priceText)
-            else:
-                priceText = priceText.split(' ')[0]
-                print(priceText)
+                    print(priceText)
                 
-            datos = {
-                "product": catchClause.text(pagina.query_selector(productName)),
-                # Número de Identificación Estándar de Amazon(ASIN)
-                "ASIN": sku,
-                "price": priceText,
-                "original_price": priceText,
-                "scrore": catchClause.text(pagina.query_selector(score)),
-                "score_nums": re.sub(r"[()]", "", catchClause.text(pagina.query_selector(scoreNumber))),
-                "product_link": ingresoProducto,
-                "image": img,
-            }
-            
-            datosAmazon.append(datos)
-        except:
-            datosAmazon = []
+                nameProduct = catchClause.text(pagina.query_selector(productName))
+                if (nameProduct == 'NO_AVAILABLE'):
+                    nameProduct = catchClause.text(pagina.query_selector(productNameSecondary))
+                    
+                datos = {
+                    "product": nameProduct,
+                    # Número de Identificación Estándar de Amazon(ASIN)
+                    "ASIN": individual_sku,
+                    "price": priceText,
+                    "original_price": priceText,
+                    "scrore": catchClause.text(pagina.query_selector(score)),
+                    "score_nums": re.sub(r"[()]", "", catchClause.text(pagina.query_selector(scoreNumber))),
+                    "product_link": ingresoProducto,
+                    "image": img,
+                }
+                
+                datosAmazon.append(datos)
+            except:
+                datosAmazon = datosAmazon
         navegador.close()
     print('End scraping product from sku')
     return datosAmazon
