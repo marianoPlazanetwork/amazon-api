@@ -250,7 +250,7 @@ def scrappingProductSKU(sku: str):
                 
                 datosAmazon.append(datos)
             except:
-                datosAmazon = datosAmazon
+                print ('Ocurrio una excepcion al consultar productos desde lista SKU')
         navegador.close()
     print('End scraping product from sku')
     return datosAmazon
