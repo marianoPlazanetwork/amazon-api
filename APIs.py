@@ -3,10 +3,6 @@ from tools import scraping, scrappingProduct
 
 app = FastAPI()
 
-@app.get("/my-first-api")
-def hello():
-  return {"Hello world!"}
-
 @app.get("/v1/get-info-amazon")
 def scraperItemsAmazon(term: str):
   if (term.__len__() == 0):

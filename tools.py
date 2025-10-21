@@ -259,19 +259,19 @@ def scrappingProductSKU(sku: str):
 def scraping(head, term = ""):
     datosAmazon = []
     catchClause = TryExcept()
-    
+
     #variables donde almacena que se quiere buscar y el enlace de amazon
     # produbuscar = str(input("Ingresa el nombre del producto que quieres buscar: "))
     produbuscar = term
     produinser = produbuscar.replace(" ","+")
-    ingresoProducto = f"https://www.amazon.com/s?k={produinser}&language=en_US"   
-    
+    ingresoProducto = f"https://www.amazon.com/s?k={produinser}&language=en_US"
+
     # Patrón de expresiones regulares para verificar si el enlace ingresado es el enlace de Amazon correcto:
     amazon_link_pattern = re.search("^https://www.amazon.com/s\?.+", ingresoProducto)
     if amazon_link_pattern == None:
         print(f"Enlace no válido. Ingrese un enlace de Amazon que incluya la categoría de producto de su elección.")
         sys.exit()
-    
+
     with sync_playwright() as play:
         try:
             navegador = play.chromium.launch(headless=head, slow_mo=10*1000)
@@ -283,35 +283,25 @@ def scraping(head, term = ""):
             print("Error al lanzar navegador")
             return datosAmazon
 
-        ##################### Selectores XPATH ###########################################################################################################
-        # La siguiente variable es para el producto buscado, podría haber más de dos elementos para él.
-        # try:
-        #     print(pagina)
-        #     nombreProducto = pagina.locator("//div[@id='departments']/ul[@class='a-unordered-list a-nostyle a-vertical a-spacing-medium']/li[@class='a-spacing-micro s-navigation-indent-1']/span[@class='a-list-item']/span[@class='a-size-base a-color-base']").inner_text().strip()
-        # except AttributeError:
-        #     nombreProducto = pagina.locator("//div[@id='departments']/ul[@class='a-unordered-list a-nostyle a-vertical a-spacing-medium']/li[@class='a-spacing-micro']/span[@class='a-list-item']").inner_text().strip()
-        
         totalPaginasUno = "//span[@class='s-pagination-item s-pagination-disabled']"
         totalPaginasDos = "//span[@class='s-pagination-strip']/a"
-        siguienteBoton = "//a[@class='s-pagination-item s-pagination-next s-pagination-button s-pagination-separator']"
+        siguienteBoton = "//a[@class='s-pagination-item s-pagination-next s-pagination-button s-pagination-button-accessibility s-pagination-separator']"
 
         contenidoPrincipal = "//div[@data-component-type='s-search-result']"
 
-        enlace = "//a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal']"
-        precio = "//span[@data-a-color='base']/span[@class='a-offscreen']"
+        enlace = "//a[@class='a-link-normal s-line-clamp-3 s-link-style a-text-normal']"
+        precio = "//div[@class='a-section a-spacing-none a-spacing-top-mini']/div[@class='a-row a-size-base a-color-secondary']/span[@class='a-color-base']"
         precioAnterior = "//span[@data-a-color='secondary']/span[@class='a-offscreen']"
         califica = "//span[@class='a-declarative']/a/i/span[@class='a-icon-alt']"
-        numCalifica = "//a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style']/span[@class='a-size-base s-underline-text']"
-        imagen = "//img[@class='s-image s-image-optimized-rendering']"
-        ###################################################################################################################################################
-        # print(nombreProducto)
-        
+        numCalifica = "//a[@class='a-link-normal s-underline-text s-underline-link-text s-link-style']/span[@class='a-size-mini puis-normal-weight-text s-underline-text']"
+        imagen = "//img[@class='s-image']"
+
         try:
             pagina.wait_for_selector(contenidoPrincipal, timeout=0)
         except PlaywrightTimeoutError:
             print(f"Error al cargar contenido. Vuelva a intentarlo en unos minutos.")
             return []
-        
+
         try:
             ultimaPagina = pagina.query_selector(
                 totalPaginasUno).inner_text().strip()
@@ -320,10 +310,7 @@ def scraping(head, term = ""):
 
         print(f"El número de Páginas es: {ultimaPagina}.")
         print(f"Realizando Scraping a: {produbuscar}.")
-        
-        # changeUltimapagina
-        # ultimaPagina = "2"
-        
+
         lastPage = int(ultimaPagina)
 
         for click in range(1, lastPage):
@@ -348,7 +335,7 @@ def scraping(head, term = ""):
                     #Agregando información recolectada
                     datosAmazon.append(datos)
             except:
-                print('Expeción en consulta a siguiente página')
+                print('Excepción en consultar a siguiente página')
                 break
             try:
                 pagina.query_selector(siguienteBoton).click()
@@ -361,15 +348,5 @@ def scraping(head, term = ""):
         navegador.close()
 
     print(f"Scraping realizado con Exito.")
-    # print(datosAmazon)
-    # if (len(datosAmazon) > 0):
-    #     print(datosAmazon[0])
-    
-    return datosAmazon
-    #Guardamos el resultado en un archivo Excel y lo imprimimos   
-    # df = pd.DataFrame(datosAmazon)
-    # df.to_excel(f"{produbuscar}.xlsx", index=False)
-    # print(f"{produbuscar} Se ha guardado con éxito")
-    # dfrecien = pd.read_excel(f"{produbuscar}.xlsx")
-    # print(dfrecien)
 
+    return datosAmazon

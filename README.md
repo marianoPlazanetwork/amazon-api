@@ -29,4 +29,3 @@ Thanks to [Harish](https://harishgarg.com) for the [inspiration to create a Fast
 # Activate virtual environment
 1. source ~/envs/tutorial-env/bin/activate
 2. deactivate
-3. 

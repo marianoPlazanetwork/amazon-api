@@ -13,14 +13,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Set up Jinja2 template directory
 templates = Jinja2Templates(directory="templates")
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "message": "Hello from FastAPI!"})
-
-@app.get("/my-first-api")
-def hello():
-  return {"Hello world!"}
-
 @app.get("/v1/get-info-amazon")
 def scraperItemsAmazon(term: str):
   if (len(term) == 0):
